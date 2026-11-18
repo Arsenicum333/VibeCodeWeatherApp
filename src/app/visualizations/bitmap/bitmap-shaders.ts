@@ -1,4 +1,4 @@
-import {MAX_GRADIENT_STOPS} from "../../gradient";
+import {MAX_GRADIENT_STOPS} from "../gradients";
 
 /**
  * Draws a mesh whose vertices are in map coordinates. `u_matrix` turns map coordinates into

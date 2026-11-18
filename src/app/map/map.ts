@@ -8,8 +8,8 @@ import OSM from "ol/source/OSM";
 import {EdrGridSource} from "../edr/edr-grid-source";
 import {ALADIN_PARAMETERS} from "../edr/edr-parameters";
 import {EdrService} from "../edr/edr.service";
-import {TEMPERATURE_GRADIENT_IN_KELVIN} from "../gradient";
 import {BitmapLayer} from "../visualizations/bitmap/bitmap-layer";
+import {TEMPERATURE_GRADIENT_IN_KELVIN} from "../visualizations/gradients";
 import {MapLayersHelperService} from "./map-layers-helper.service";
 
 @Component({
