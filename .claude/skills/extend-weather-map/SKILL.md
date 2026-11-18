@@ -14,14 +14,14 @@ The starting point is deliberately small: an OpenStreetMap base layer with one `
 
 ## Project layout
 
-| Path                                       | What it is for                                                                                                                                                                                                                 |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `src/app/edr/`                             | Everything about the EDR service: `edr.service.ts` (HTTP requests), `edr-parameters.ts` (`ALADIN_PARAMETERS`), `edr-grid-source.ts` (OpenLayers source), `coverage-json.ts` (response types), `edr-error.ts` (error messages). |
-| `src/app/data-types/`                      | Plain data structures shared by data and visualisation code, e.g. `GridData`.                                                                                                                                                  |
-| `src/app/visualizations/`                  | **Only** layers, their renderers and shaders, gradients (`gradients.ts`) and legend visualisation. One subfolder per kind of layer, e.g. `bitmap/`.                                                                            |
-| `src/app/map/map.ts`                       | The map component. `createLayers()` is where layers are created and configured; students edit it a lot.                                                                                                                        |
-| `src/app/map/map-layers-helper.service.ts` | `MapLayersHelperService`: all logic that works with the map's OpenLayers layers (listening to them, collecting information from them) and the signals the template reads.                                                      |
-| `src/app/map/map.html`, `map.css`          | Map container and overlays on top of the map (error banner, and e.g. legends).                                                                                                                                                 |
+| Path                                       | What it is for                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/edr/`                             | Everything about the EDR services: `edr-datasets.ts` (`EdrDataset`, `ALADIN_SLOVAKIA`), `edr-parameters.ts` (`EdrParameter`, `ALADIN_PARAMETERS`), `edr.service.ts` (HTTP requests), `edr-grid-source.ts` (OpenLayers source), `coverage-json.ts` (response types), `edr-error.ts` (error messages). |
+| `src/app/data-types/`                      | Plain data structures shared by data and visualisation code, e.g. `GridData`.                                                                                                                                                                                                                        |
+| `src/app/visualizations/`                  | **Only** layers, their renderers and shaders, gradients (`gradients.ts`) and legend visualisation. One subfolder per kind of layer, e.g. `bitmap/`.                                                                                                                                                  |
+| `src/app/map/map.ts`                       | The map component. `createLayers()` is where layers are created and configured; students edit it a lot.                                                                                                                                                                                              |
+| `src/app/map/map-layers-helper.service.ts` | `MapLayersHelperService`: all logic that works with the map's OpenLayers layers (listening to them, collecting information from them) and the signals the template reads.                                                                                                                            |
+| `src/app/map/map.html`, `map.css`          | Map container and overlays on top of the map (error banner, and e.g. legends).                                                                                                                                                                                                                       |
 
 ## Rules
 
@@ -30,15 +30,19 @@ The starting point is deliberately small: an OpenStreetMap base layer with one `
 3. **Keep `createLayers()` in `map.ts` short and declarative.** It only builds layers from options, so students can easily see and change what is on the map. Layers are rendered bottom to top, in array order.
 4. **Layers are static.** Everything is configured through constructor options when the layer is created. Do not add setters or `update...()` methods to layers, renderers or sources.
 5. **All EDR requests go through `EdrService`.** Add a new method there for a new kind of query instead of calling `HttpClient` elsewhere.
-6. **Keep it simple.** Extend OpenLayers classes directly (`ol/layer/Layer`, `ol/renderer/Layer`, `ol/source/Source`) and use plain WebGL2 or Canvas 2D. Do not add extra abstraction layers, rendering libraries, web workers or offscreen rendering.
-7. **No tests.** This repository intentionally has none; see the `no-tests` skill.
-8. Prettier formats the code (4 spaces, double quotes, 105 characters per line). Run `npm run format` after changing files.
+6. **`EdrParameter` is the only parameter type, also for composite parameters.** Some quantities are made of several EDR parameters, e.g. wind has a `u-component-of-wind` and a `v-component-of-wind`. For them, **extend the existing `EdrParameter` interface** (e.g. with an optional field listing the component parameter names) instead of creating a new type like `EdrVectorParameter` or `EdrWindParameter`. Keep the existing parameters valid, so a new field must be optional.
+    - A parameter from ALADIN goes into **`ALADIN_PARAMETERS`**, next to `temperature2m`; do not create a separate constant such as `ALADIN_VECTOR_PARAMETERS` or `ALADIN_WIND_PARAMETERS`.
+    - A parameter from another EDR service may get its own constant (e.g. `GOES_18_PARAMETERS`), but it uses the same type: `satisfies Record<string, EdrParameter>`.
+7. **Keep it simple.** Extend OpenLayers classes directly (`ol/layer/Layer`, `ol/renderer/Layer`, `ol/source/Source`) and use plain WebGL2 or Canvas 2D. Do not add extra abstraction layers, rendering libraries, web workers or offscreen rendering.
+8. **No tests.** This repository intentionally has none; see the `no-tests` skill.
+9. Prettier formats the code (4 spaces, double quotes, 105 characters per line). Run `npm run format` after changing files.
 
 ## How the existing pieces work
 
-- `EdrService.getCube(parameter, bbox)` requests a cube query for the current hour, always in `CRS:84` (longitude/latitude) and as CoverageJSON. An empty answer (`204 No Content`, e.g. wrong level or time) becomes an `EdrNoDataError`.
-- `ALADIN_PARAMETERS` in `edr-parameters.ts` lists ready-to-use parameters. An `EdrParameter` is a `collectionId`, a `parameterName` and an optional vertical level `z`. Every parameter belongs to exactly one collection; see https://api.openweather.cloud/edr/shmu/aladin/slovakia/collections for all collections, parameters, units and levels.
-- `EdrGridSource` (an OpenLayers `Source`) turns the visible map extent into a bbox clipped to `ALADIN_SLOVAKIA_DOMAIN`, fetches it with `getGridData(bbox)` and converts it to `GridData`. It stores the last error message in the `loadError` property (`LOAD_ERROR_PROPERTY`), which `MapLayersHelperService.listenForLoadErrors` turns into the red banner at the top of the map.
+- An `EdrDataset` in `edr-datasets.ts` describes one EDR service: its `baseUrl`, the `domain` it covers (longitude/latitude bbox) and the map `attribution`. `ALADIN_SLOVAKIA` is the only one so far. **Dataset-specific values (URLs, areas, credits) belong only in these constants**; general code such as `EdrService` or `EdrGridSource` reads them from the parameter's `dataset` and must not mention a specific dataset.
+- `EdrService.getCube(parameter, bbox)` requests a cube query from the parameter's dataset for the current hour, always in `CRS:84` (longitude/latitude) and as CoverageJSON. An empty answer (`204 No Content`, e.g. wrong level or time) becomes an `EdrNoDataError`.
+- `ALADIN_PARAMETERS` in `edr-parameters.ts` lists ready-to-use parameters. An `EdrParameter` is a `dataset`, a `collectionId`, a `parameterName` and an optional vertical level `z`. Every parameter belongs to exactly one collection; see `${dataset.baseUrl}/collections` (for ALADIN: https://api.openweather.cloud/edr/shmu/aladin/slovakia/collections) for all collections, parameters, units and levels.
+- `EdrGridSource` (an OpenLayers `Source`) turns the visible map extent into a bbox clipped to its dataset's `domain`, fetches it with `getGridData(bbox)` and converts it to `GridData`. Its attribution comes from the dataset. It stores the last error message in the `loadError` property (`LOAD_ERROR_PROPERTY`), which `MapLayersHelperService.listenForLoadErrors` turns into the red banner at the top of the map.
 - `GridData` is a regular longitude/latitude grid: `values` row by row from the north, `NaN` where data is missing.
 - `BitmapLayer` takes a `source`, a `gradient`, an optional `gradientMode` (`"linear"` or `"stepped"`) and any OpenLayers layer option such as `opacity`. Its `BitmapLayerRenderer` requests data in `prepareFrame` once the view stops moving, uploads the grid as a float texture and draws a reprojected mesh. The fragment shader in `bitmap-shaders.ts` interpolates the grid and colours it with the gradient.
 - A `Gradient` is a list of up to `MAX_GRADIENT_STOPS` (16) stops `{value, color: [r, g, b, a]}` (0–255), sorted by value. **Stop values are in the unit of the data** (e.g. Kelvin for temperature, mm for precipitation).
@@ -48,11 +52,11 @@ The starting point is deliberately small: an OpenStreetMap base layer with one `
 ### Show another weather parameter
 
 1. Find the parameter, its collection, unit and levels in the `/collections` listing above.
-2. Add it to `ALADIN_PARAMETERS` in `src/app/edr/edr-parameters.ts`. Set `z` only if the collection has vertical levels (e.g. `"2"` for 2 m, `"850"` for 850 hPa); surface collections have none.
+2. Add it to `ALADIN_PARAMETERS` in `src/app/edr/edr-parameters.ts` with `dataset: ALADIN_SLOVAKIA`. Set `z` only if the collection has vertical levels (e.g. `"2"` for 2 m, `"850"` for 850 hPa); surface collections have none. For a parameter of another EDR service, first add an `EdrDataset` constant for that service to `edr-datasets.ts`, then a parameter constant of the same `EdrParameter` type (see rule 6).
 3. Add a gradient to `src/app/visualizations/gradients.ts`, with stop values in the data unit. Use a transparent first stop (alpha 0) for values that should not be drawn, e.g. 0 mm of precipitation.
 4. Add a `BitmapLayer` to `createLayers()` in `map.ts` with an `EdrGridSource` for the new parameter. Put it after the layers it should cover.
 
-Wind and other vector quantities come as two parameters (U and V components). A bitmap layer of wind speed needs both grids and `√(u² + v²)`; that means a new source or a change to `GridData`, so check with the user first.
+Wind and other vector quantities come as two parameters (U and V components) of one collection. Define them as one entry in `ALADIN_PARAMETERS` by extending `EdrParameter` (see rule 6), not with a new parameter type or constant. A bitmap layer of wind speed also needs both grids and `√(u² + v²)`; that means a change to the source or to `GridData`, so check with the user first.
 
 ### Add a new kind of layer (e.g. isolines, arrows, numbers)
 

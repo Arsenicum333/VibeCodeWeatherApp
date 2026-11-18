@@ -10,6 +10,7 @@ Before adding or changing a feature, read [.agents/skills/extend-weather-map/SKI
 - Logic that works with the map's OpenLayers layers (listeners, collecting information from layers) goes in `MapLayersHelperService` (`src/app/map/map-layers-helper.service.ts`).
 - Layers are created and configured in `createLayers()` in `src/app/map/map.ts`; keep it short and declarative.
 - Layers are static: configure them through constructor options, without setters or update methods.
+- `EdrParameter` is the only parameter type. For composite parameters (e.g. wind with U and V components), extend `EdrParameter` and add the parameter to `ALADIN_PARAMETERS` (or to a constant of the same type for another dataset) instead of creating new parameter types or constants.
 
 ## No tests
 
