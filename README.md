@@ -1,58 +1,39 @@
 # Noc26
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.7.
+This workshop demonstrates how to use weather data from an EDR service and how to visualize it on a map with OpenLayers.
+
+## Workshop parts
+
+1. **Weather data from EDR.** [OGC API – Environmental Data Retrieval (EDR)](https://ogcapi.ogc.org/edr/) is an open standard for requesting weather and other environmental data over HTTP. The app fetches the 2 m air temperature forecast from the [SHMU ALADIN model for Slovakia](https://api.openweather.cloud/edr/shmu/aladin/slovakia) on the OpenWeather EDR service, which needs no authentication. See `src/app/edr/`.
+2. **Visualization with OpenLayers.** [OpenLayers](https://openlayers.org/) shows a full-screen map with an OpenStreetMap base layer, and the weather data is displayed on top of it. See `src/app/map/`.
+
+The project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.7.
+
+## Installing packages
+
+Before running the application locally for the first time, install the project's packages:
+
+```bash
+npm install
+```
+
+The project requires Node.js 24 (see `.nvmrc`).
 
 ## Development server
 
 To start a local development server, run:
 
 ```bash
-ng serve
+npm exec ng serve
 ```
+
+This uses the Angular CLI installed in the project's `node_modules`, so you don't need a global Angular CLI. To pass options to `ng`, put `--` before it, for example `npm exec -- ng serve --port 4300`.
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-## Code scaffolding
+## Tests
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+This is a workshop demo focused on EDR weather data and OpenLayers, so it intentionally has no unit or end-to-end tests.
 
 ## Additional Resources
 
