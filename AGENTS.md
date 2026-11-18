@@ -4,7 +4,7 @@ This is a workshop demo app with two parts: fetching weather data from an OGC ED
 
 ## Adding features
 
-Before adding or changing a feature, read [.agents/skills/extend-weather-map/SKILL.md](.agents/skills/extend-weather-map/SKILL.md). The most important rules:
+Before adding or changing a feature, read [.agents/skills/extend-weather-map/SKILL.md](.agents/skills/extend-weather-map/SKILL.md). To use data from another weather model, satellite or radar, read [.agents/skills/add-edr-dataset/SKILL.md](.agents/skills/add-edr-dataset/SKILL.md) and first ask the user for the EDR URL of that service (e.g. `https://api.openweather.cloud/edr/shmu/aladin/slovakia`; all services are listed at https://api.openweather.cloud/). The most important rules:
 
 - `src/app/visualizations/` holds only layers, renderers (and shaders), gradients and legend visualisation.
 - Logic that works with the map's OpenLayers layers (listeners, collecting information from layers) goes in `MapLayersHelperService` (`src/app/map/map-layers-helper.service.ts`).

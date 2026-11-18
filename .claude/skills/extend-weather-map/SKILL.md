@@ -52,7 +52,7 @@ The starting point is deliberately small: an OpenStreetMap base layer with one `
 ### Show another weather parameter
 
 1. Find the parameter, its collection, unit and levels in the `/collections` listing above.
-2. Add it to `ALADIN_PARAMETERS` in `src/app/edr/edr-parameters.ts` with `dataset: ALADIN_SLOVAKIA`. Set `z` only if the collection has vertical levels (e.g. `"2"` for 2 m, `"850"` for 850 hPa); surface collections have none. For a parameter of another EDR service, first add an `EdrDataset` constant for that service to `edr-datasets.ts`, then a parameter constant of the same `EdrParameter` type (see rule 6).
+2. Add it to `ALADIN_PARAMETERS` in `src/app/edr/edr-parameters.ts` with `dataset: ALADIN_SLOVAKIA`. Set `z` only if the collection has vertical levels (e.g. `"2"` for 2 m, `"850"` for 850 hPa); surface collections have none. For a parameter of another EDR service (another model, a satellite or radar), follow the `add-edr-dataset` skill: it starts by asking the user for the service's URL.
 3. Add a gradient to `src/app/visualizations/gradients.ts`, with stop values in the data unit. Use a transparent first stop (alpha 0) for values that should not be drawn, e.g. 0 mm of precipitation.
 4. Add a `BitmapLayer` to `createLayers()` in `map.ts` with an `EdrGridSource` for the new parameter. Put it after the layers it should cover.
 
