@@ -8,7 +8,7 @@ import OSM from "ol/source/OSM";
 import {TEMPERATURE_GRADIENT_IN_KELVIN} from "../consts/gradients";
 import {ALADIN_PARAMETERS} from "../consts/parameters";
 import {EdrGridSource} from "../edr/edr-grid-source";
-import {EdrService} from "../edr/edr-api.service";
+import {EdrApiService} from "../edr/edr-api.service";
 import {BitmapLayer} from "../visualizations/bitmap/bitmap-layer";
 import {MapLayersHelperService} from "./map-layers-helper.service";
 
@@ -22,7 +22,7 @@ export class MapComponent implements OnDestroy {
     protected readonly mapLayersHelper: MapLayersHelperService;
 
     private readonly mapContainer = viewChild.required<ElementRef<HTMLDivElement>>("mapContainer");
-    private readonly edrService = inject(EdrService);
+    private readonly edrApiService = inject(EdrApiService);
     private map?: OlMap;
 
     constructor() {
@@ -48,7 +48,7 @@ export class MapComponent implements OnDestroy {
         return [
             new TileLayer({source: new OSM()}),
             new BitmapLayer({
-                source: new EdrGridSource(this.edrService, ALADIN_PARAMETERS.temperature2m),
+                source: new EdrGridSource(this.edrApiService, ALADIN_PARAMETERS.temperature2m),
                 gradient: TEMPERATURE_GRADIENT_IN_KELVIN,
                 gradientMode: "linear",
                 opacity: 0.7,

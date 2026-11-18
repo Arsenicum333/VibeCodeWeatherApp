@@ -4,7 +4,7 @@ import Source from "ol/source/Source";
 import {map, Observable, tap} from "rxjs";
 import {describeEdrError} from "./edr-error";
 import {EdrParameter} from "../types/edr-parameters.type";
-import {EdrService, LonLatBbox} from "./edr-api.service";
+import {EdrApiService, LonLatBbox} from "./edr-api.service";
 import {GridData} from "../data-types/grid-data";
 
 /**
@@ -22,7 +22,7 @@ const BBOX_MARGIN_DEG = 0.1;
 /** Source of grids of one EDR parameter (e.g. temperature), for the area the map shows. */
 export class EdrGridSource extends Source {
     constructor(
-        private readonly edrService: EdrService,
+        private readonly edrApiService: EdrApiService,
         /** What to fetch, e.g. one of `ALADIN_PARAMETERS`. */
         private readonly parameter: EdrParameter
     ) {
@@ -55,7 +55,7 @@ export class EdrGridSource extends Source {
      * the request fails and cleared when data arrives.
      */
     getGridData(bbox: LonLatBbox): Observable<GridData> {
-        return this.edrService.getCube(this.parameter, bbox).pipe(
+        return this.edrApiService.getCube(this.parameter, bbox).pipe(
             map(coverage => GridData.fromCoverage(coverage, this.parameter.parameterName)),
             tap({
                 next: () => this.set(LOAD_ERROR_PROPERTY, undefined),

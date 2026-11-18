@@ -14,7 +14,7 @@ const CUBE_QUERY = {
 } as const;
 
 @Injectable({providedIn: "root"})
-export class EdrService {
+export class EdrApiService {
     private readonly http = inject(HttpClient);
 
     /**
