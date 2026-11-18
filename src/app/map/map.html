@@ -1,1 +1,9 @@
 <div #mapContainer class="map"></div>
+
+@if (mapLayersHelper.loadErrors().length > 0) {
+    <div class="load-error" role="alert">
+        @for (message of mapLayersHelper.loadErrors(); track $index) {
+            <div>{{ message }}</div>
+        }
+    </div>
+}

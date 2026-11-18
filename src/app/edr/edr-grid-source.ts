@@ -1,0 +1,73 @@
+import {Extent} from "ol/extent";
+import {ProjectionLike, transformExtent} from "ol/proj";
+import Source from "ol/source/Source";
+import {map, Observable, tap} from "rxjs";
+import {describeEdrError} from "./edr-error";
+import {ALADIN_SLOVAKIA_DOMAIN, EdrService, LonLatBbox} from "./edr.service";
+import {GridData} from "../data-types/grid-data";
+
+/**
+ * Name of the OpenLayers property holding the last load error. Changes to it fire a
+ * "propertychange" event with this `key`.
+ */
+export const LOAD_ERROR_PROPERTY = "loadError";
+
+/**
+ * Extra margin around the visible area, in degrees. It keeps a few grid points around the view
+ * when zoomed in, so the edges of the screen are not left without data.
+ */
+const BBOX_MARGIN_DEG = 0.1;
+
+/** Source of grids of one EDR parameter (e.g. `temperature`), for the area the map shows. */
+export class EdrGridSource extends Source {
+    constructor(
+        private readonly edrService: EdrService,
+        /** EDR parameter to fetch, as listed in the collection's `parameter_names`. */
+        private readonly parameterName: string
+    ) {
+        super({attributions: "Weather data: ALADIN model by SHMU"});
+    }
+
+    /**
+     * Longitude/latitude bbox to request for the visible map `extent`, clipped to the area the
+     * model covers. Returns `undefined` when the view does not overlap that area.
+     */
+    getRequestBbox(extent: Extent, projection: ProjectionLike): LonLatBbox | undefined {
+        const [minLon, minLat, maxLon, maxLat] = transformExtent(extent, projection, "EPSG:4326");
+        const [domainMinLon, domainMinLat, domainMaxLon, domainMaxLat] = ALADIN_SLOVAKIA_DOMAIN;
+        const roundDown = (value: number): number => Math.floor(value * 100) / 100;
+        const roundUp = (value: number): number => Math.ceil(value * 100) / 100;
+
+        // Rounding to 0.01° keeps the URL short and makes repeated requests for the same area equal.
+        const bbox: LonLatBbox = [
+            Math.max(roundDown(minLon - BBOX_MARGIN_DEG), domainMinLon),
+            Math.max(roundDown(minLat - BBOX_MARGIN_DEG), domainMinLat),
+            Math.min(roundUp(maxLon + BBOX_MARGIN_DEG), domainMaxLon),
+            Math.min(roundUp(maxLat + BBOX_MARGIN_DEG), domainMaxLat),
+        ];
+        const overlapsDomain = bbox[0] < bbox[2] && bbox[1] < bbox[3];
+        return overlapsDomain ? bbox : undefined;
+    }
+
+    /**
+     * Fetches the parameter's grid inside `bbox`. Also updates `getLoadError()`: it is set when
+     * the request fails and cleared when data arrives.
+     */
+    getGridData(bbox: LonLatBbox): Observable<GridData> {
+        return this.edrService.getCube(this.parameterName, bbox).pipe(
+            map(coverage => GridData.fromCoverage(coverage, this.parameterName)),
+            tap({
+                next: () => this.set(LOAD_ERROR_PROPERTY, undefined),
+                error: (error: unknown) => this.set(LOAD_ERROR_PROPERTY, describeEdrError(error)),
+            })
+        );
+    }
+
+    /**
+     * Message describing why the last request failed, or `undefined` if it succeeded. To react to
+     * changes, listen for "propertychange" events whose `key` is `LOAD_ERROR_PROPERTY`.
+     */
+    getLoadError(): string | undefined {
+        return this.get(LOAD_ERROR_PROPERTY);
+    }
+}
