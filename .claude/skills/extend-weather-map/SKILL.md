@@ -81,7 +81,7 @@ Wind and other vector quantities come as two parameters (U and V components) of 
 
 There is no legend in the code yet. Build it like this:
 
-1. **Types** in `src/app/visualizations/legend/legend-data.ts`:
+1. **Types** in `src/app/types/legend.type.ts` (rule 2):
     - `LegendOptions { title: string; formatValue?: (value: number) => string }`: the title includes the unit (e.g. `"Temperature [°C]"`); `formatValue` converts stop values for display (e.g. Kelvin to °C) and defaults to showing the value unchanged.
     - `LegendData extends LegendOptions { gradient: Gradient; gradientMode: GradientMode }`.
 2. **Layer option**: add `legend?: LegendOptions` to `BitmapLayerOptions`, keep it in a private field, and add `getLegend(): LegendData | undefined` to `BitmapLayer`, returning the options together with the layer's own `gradient` and `gradientMode` (so the legend always matches what is drawn). No legend option means no legend.

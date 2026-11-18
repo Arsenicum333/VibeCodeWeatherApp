@@ -1,11 +1,11 @@
 ---
 name: no-tests
-description: Use whenever writing, generating, or changing code in this repository, and whenever anyone asks for unit, component, or end-to-end tests. This is an OpenLayers workshop demo that must stay free of tests and test tooling.
+description: Use whenever writing, generating, or changing code in this repository, and whenever anyone asks for unit, component, or end-to-end tests. This is a workshop demo (EDR weather data + OpenLayers) that must stay free of tests and test tooling.
 ---
 
 # No tests in this repository
 
-This repository is a demo app for a workshop that teaches how to build map applications with OpenLayers in Angular. It intentionally contains no tests, so that students can focus on OpenLayers and change the app freely without failing tests getting in the way.
+This repository is a demo app for a workshop that teaches how to use weather data from EDR services and how to visualise it on a map with OpenLayers in Angular. It intentionally contains no tests, so that students can focus on the data and the map and change the app freely without failing tests getting in the way.
 
 ## Rules
 
