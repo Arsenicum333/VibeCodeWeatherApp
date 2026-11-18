@@ -4,7 +4,7 @@ import Source from "ol/source/Source";
 import {map, Observable, tap} from "rxjs";
 import {describeEdrError} from "./edr-error";
 import {EdrParameter} from "./edr-parameters";
-import {ALADIN_SLOVAKIA_DOMAIN, EdrService, LonLatBbox} from "./edr.service";
+import {EdrService, LonLatBbox} from "./edr.service";
 import {GridData} from "../data-types/grid-data";
 
 /**
@@ -26,16 +26,16 @@ export class EdrGridSource extends Source {
         /** What to fetch, e.g. one of `ALADIN_PARAMETERS`. */
         private readonly parameter: EdrParameter
     ) {
-        super({attributions: "Weather data: ALADIN model by SHMU"});
+        super({attributions: parameter.dataset.attribution});
     }
 
     /**
      * Longitude/latitude bbox to request for the visible map `extent`, clipped to the area the
-     * model covers. Returns `undefined` when the view does not overlap that area.
+     * parameter's dataset covers. Returns `undefined` when the view does not overlap that area.
      */
     getRequestBbox(extent: Extent, projection: ProjectionLike): LonLatBbox | undefined {
         const [minLon, minLat, maxLon, maxLat] = transformExtent(extent, projection, "EPSG:4326");
-        const [domainMinLon, domainMinLat, domainMaxLon, domainMaxLat] = ALADIN_SLOVAKIA_DOMAIN;
+        const [domainMinLon, domainMinLat, domainMaxLon, domainMaxLat] = this.parameter.dataset.domain;
         const roundDown = (value: number): number => Math.floor(value * 100) / 100;
         const roundUp = (value: number): number => Math.ceil(value * 100) / 100;
 

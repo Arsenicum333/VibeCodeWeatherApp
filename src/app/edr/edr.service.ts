@@ -8,11 +8,6 @@ import {EdrParameter} from "./edr-parameters";
 /** Bounding box in longitude/latitude degrees: [minLon, minLat, maxLon, maxLat]. */
 export type LonLatBbox = [number, number, number, number];
 
-/** EDR (OGC Environmental Data Retrieval) service with the SHMU ALADIN model for Slovakia. */
-const EDR_BASE_URL = "https://api.openweather.cloud/edr/shmu/aladin/slovakia";
-
-export const ALADIN_SLOVAKIA_DOMAIN: LonLatBbox = [16.8, 47.7, 22.6, 49.7];
-
 const CUBE_QUERY = {
     crs: "CRS:84",
     format: "CoverageJSON",
@@ -22,10 +17,14 @@ const CUBE_QUERY = {
 export class EdrService {
     private readonly http = inject(HttpClient);
 
-    /** Fetches the grid of `parameter` inside `bbox` for the current hour. */
+    /**
+     * Fetches the grid of `parameter` inside `bbox` for the current hour, from the EDR service
+     * (OGC Environmental Data Retrieval) of the parameter's dataset.
+     */
     getCube(parameter: EdrParameter, bbox: LonLatBbox): Observable<Coverage> {
         const query = CUBE_QUERY;
-        const url = `${EDR_BASE_URL}/collections/${encodeURIComponent(parameter.collectionId)}/cube`;
+        const collection = encodeURIComponent(parameter.collectionId);
+        const url = `${parameter.dataset.baseUrl}/collections/${collection}/cube`;
         let params = new HttpParams()
             .set("parameter-name", parameter.parameterName)
             .set("bbox", bbox.join(","))
