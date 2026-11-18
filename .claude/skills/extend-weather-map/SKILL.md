@@ -44,7 +44,9 @@ The starting point is deliberately small: an OpenStreetMap base layer with one `
 9. **No tests.** This repository intentionally has none; see the `no-tests` skill.
 10. Prettier formats the code (4 spaces, double quotes, 105 characters per line). Run `npm run format` after changing files.
 
-## How the existing pieces work
+## How the starting app works
+
+This describes the app as the workshop starts. Features added since then may have changed it (e.g. a timeline changes `getCube`); where the code differs, follow the code and do not update this skill.
 
 - An `EdrDataset` (type in `types/edr-datasets.type.ts`, constants in `consts/datasets.ts`) describes one EDR service: its `baseUrl`, the `domain` it covers (longitude/latitude bbox) and the map `attribution`. `ALADIN_SLOVAKIA` is the only one so far. **Dataset-specific values (URLs, areas, credits) belong only in these constants**; general code such as `EdrApiService` or `EdrGridSource` reads them from the parameter's `dataset` and must not mention a specific dataset.
 - `EdrApiService.getCube(parameter, bbox)` requests a cube query from the parameter's dataset for the current hour, always in `CRS:84` (longitude/latitude) and as CoverageJSON. An empty answer (`204 No Content`, e.g. wrong level or time) becomes an `EdrNoDataError`.
@@ -86,16 +88,29 @@ There is no legend in the code yet. Build it like this:
     - `LegendData extends LegendOptions { gradient: Gradient; gradientMode: GradientMode }`.
 2. **Layer option**: add `legend?: LegendOptions` to `BitmapLayerOptions`, keep it in a private field, and add `getLegend(): LegendData | undefined` to `BitmapLayer`, returning the options together with the layer's own `gradient` and `gradientMode` (so the legend always matches what is drawn). No legend option means no legend.
 3. **Collecting**: add `collectLegends(map)` to `MapLayersHelperService`. It takes `map.getAllLayers()`, keeps the `BitmapLayer`s, calls `getLegend()`, drops `undefined` results and stores them in a read-only `legends` signal. Call it in `MapComponent` right after `listenForLoadErrors(this.map)`.
-4. **Component**: `LegendComponent` in `src/app/visualizations/legend/` (`legend.ts`, `legend.html`, `legend.css`) with `legend = input.required<LegendData>()`:
-    - Draw the colour bar as a CSS `linear-gradient(to top, ...)` with colours `rgba(r, g, b, a / 255)`, lowest value at the bottom.
-    - Space the stops **evenly**, not by value, so uneven stops (0.1, 0.5, 1 … 50 mm) stay readable. With `n` stops: `"linear"` puts stop `i` at `i / (n - 1) * 100%` and blends between them; `"stepped"` gives stop `i` a solid band from `i / n` to `(i + 1) / n` (repeat each colour at both positions for hard edges).
-    - Put a label (`formatValue(stop.value)`) next to the bar at the same positions: at the stop for `"linear"`, at the start of the band for `"stepped"`.
-5. **Placement**: in `map.html`, loop over `mapLayersHelper.legends()` inside an absolutely positioned container in the bottom-right corner (e.g. `right: 8px; bottom: 32px`, above the OpenLayers attribution text, `z-index: 1`), and add `LegendComponent` to the `imports` of `MapComponent`. Legends of several layers sit side by side.
+4. **Component**: `LegendComponent` in `src/app/visualizations/legend/` (`legend.ts`, `legend.html`, `legend.css`) with `legend = input.required<LegendData>()`. It shows the title, the gradient's colours (`rgba(r, g, b, a / 255)`) and the stop values formatted with `formatValue`. It must match the `gradientMode`: colours blend between stops for `"linear"` and form solid bands for `"stepped"`.
+5. **Placement**: in `map.html`, loop over `mapLayersHelper.legends()` inside an absolutely positioned overlay (`z-index: 1`) that does not cover the OpenLayers attribution or zoom controls, and add `LegendComponent` to the `imports` of `MapComponent`. There can be several legends at once.
 6. Add `legend: {title: ..., formatValue: ...}` to the layers in `createLayers()`.
 
 ### React to the map's layers in the UI (banners, toggles, info panels)
 
 Follow the load-error banner: the layer or source exposes the information (a getter, or an OpenLayers property that fires `propertychange`); `MapLayersHelperService` listens to it on all relevant layers and keeps a read-only signal up to date; `map.html` shows it as an absolutely positioned overlay styled in `map.css`.
+
+### Add a timeline (time slider for the forecast hours)
+
+There is no timeline in the code yet: `EdrApiService.getCube` always requests the current hour. Build it like this, without recreating the layers when the time changes:
+
+1. **Times of a collection**: add `types/edr-collection.type.ts` with a minimal `EdrCollection` (`id`, `extent.temporal?.values?: string[]`), and `getTimes(parameter): Observable<string[]>` to `EdrApiService`, reading `extent.temporal.values` of `GET ${baseUrl}/collections/{collectionId}` (empty list when missing). Collections of one dataset can have different times: in ALADIN, temperature starts one hour earlier than the 1-hour precipitation accumulation.
+2. **Time as a request argument**: change `getCube(parameter, bbox)` to `getCube(parameter, bbox, time: string)` and send `time` as `datetime`; remove `currentHour()` from the service.
+3. **Source**: give `EdrGridSource` a third constructor argument `time: Signal<string>` (read-only; a constructor option, not a setter, see rule 5). Add `getTime()` (returns `this.time()`), `getAvailableTimes()` (calls `getTimes`) and change `getGridData(bbox)` to `getGridData(bbox, time)`.
+4. **Renderer**: in `requestData` of `BitmapLayerRenderer` (and of every other layer kind), read `source.getTime()`, build the request key from the bbox **and** the time (e.g. `` `${bbox.join(",")}@${time}` ``) and pass the time to `getGridData`. Do not clear the old grid when the time changes, so the old picture stays until the new data arrives (no flicker).
+5. **Available times**: add `collectAvailableTimes(map)` to `MapLayersHelperService`. It asks every `EdrGridSource` on the map for its times (`forkJoin`), keeps only the times **all** of them have (so every layer has data for any chosen time), sorts them and stores them in a read-only `availableTimes` signal. Call it in `MapComponent` right after `listenForLoadErrors(this.map)`.
+6. **Selected time** in `MapComponent`: a `linkedSignal<string[], string>` with `source: () => this.mapLayersHelper.availableTimes()`. Its computation keeps the previous value while it is still in the list; otherwise it picks the first time that is not in the past (compare with `Date.parse`), the last time if all are past, or the current hour while the list is still empty. Format that fallback like the EDR times (`2026-11-18T13:00:00Z`, without `.000`), otherwise the layers fetch the same hour twice once the times arrive. In `createLayers()`, pass `this.selectedTime.asReadonly()` to every `EdrGridSource`.
+7. **Redraw on change**: an `effect` in the `MapComponent` constructor reads `selectedTime()` and calls `this.map?.render()`. That is all: the renderers notice the new time in `prepareFrame` and request new data.
+8. **Component**: `TimeSliderComponent` in `src/app/time-slider/` (`time-slider.ts`, `.html`, `.css`; it is UI, not a visualisation, so not in `visualizations/`) with `times = input.required<string[]>()` and `selectedTime = model.required<string>()`. It lets the user pick one of `times()` and shows the selected time. EDR times are in UTC; `DatePipe` shows local time. If you use `<input type="range">`, bind `[max]` **before** `[value]`, otherwise the browser clamps the value to the old maximum. Updating the selected time continuously while the user drags is fine: the renderer cancels the previous request.
+9. **Placement**: in `map.html`, show `<app-time-slider [times]="mapLayersHelper.availableTimes()" [(selectedTime)]="selectedTime" />` only when there are available times, in an absolutely positioned overlay (`z-index: 1`) that does not cover the OpenLayers attribution, zoom controls or legends, and add `TimeSliderComponent` to the `imports` of `MapComponent`.
+
+Check it in the browser: moving the slider must send one new cube request per layer with the new `datetime`, and the layers must redraw without an error banner.
 
 ### Query a value at a point (e.g. temperature where the user clicks)
 

@@ -19,6 +19,10 @@ This repository intentionally has no tests. Do not create test files (`*.spec.ts
 
 The full rules are in [.agents/skills/no-tests/SKILL.md](.agents/skills/no-tests/SKILL.md).
 
+## Skills describe the starting app
+
+The skills describe the app as the workshop starts. Once features have been added, the code may differ from them; then the code is right, so follow it. Do not edit `.agents/skills/` or `.claude/skills/` unless the user asks you to: do not document new features in them, mark recipes as done or update their descriptions after a change.
+
 ## Skill copies
 
-Every skill exists twice: in `.agents/skills/` (read by Codex, Cursor, Copilot and others) and in `.claude/skills/` (read by Claude Code). Keep both copies identical.
+Every skill exists twice: in `.agents/skills/` (read by Codex, Cursor, Copilot and others) and in `.claude/skills/` (read by Claude Code). When the user asks you to change a skill, change both copies identically.
