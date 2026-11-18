@@ -1,0 +1,7 @@
+{
+    // Format files with Prettier (settings in .prettierrc) every time they are saved.
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    // Only format when the project has a Prettier config, so other settings never kick in.
+    "prettier.requireConfig": true
+}

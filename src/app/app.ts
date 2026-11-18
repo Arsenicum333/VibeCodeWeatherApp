@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
-import { MapComponent } from './map/map';
+import {Component} from "@angular/core";
+import {MapComponent} from "./map/map";
 
 @Component({
-  imports: [MapComponent],
-  selector: 'app-root',
-  styleUrl: './app.css',
-  templateUrl: './app.html',
+    imports: [MapComponent],
+    selector: "app-root",
+    styleUrl: "./app.css",
+    templateUrl: "./app.html",
 })
 export class App {}
