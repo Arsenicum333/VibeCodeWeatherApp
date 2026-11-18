@@ -1,5 +1,5 @@
-import {Coverage} from "../edr/coverage-json";
-import {LonLatBbox} from "../edr/edr.service";
+import {Coverage} from "../types/coverage-json.type";
+import {LonLatBbox} from "../edr/edr-api.service";
 
 /**
  * A regular grid of scalar values in longitude/latitude.

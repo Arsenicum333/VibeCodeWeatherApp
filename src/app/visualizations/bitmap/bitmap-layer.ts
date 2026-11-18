@@ -1,6 +1,6 @@
 import Layer, {Options} from "ol/layer/Layer";
 import {EdrGridSource} from "../../edr/edr-grid-source";
-import {Gradient, GradientMode} from "../gradients";
+import {Gradient, GradientMode} from "../../types/gradients.type";
 import {BitmapLayerRenderer} from "./bitmap-layer-renderer";
 
 export type BitmapLayerOptions = Options<EdrGridSource> & {

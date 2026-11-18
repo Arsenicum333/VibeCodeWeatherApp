@@ -3,8 +3,8 @@ import {ProjectionLike, transformExtent} from "ol/proj";
 import Source from "ol/source/Source";
 import {map, Observable, tap} from "rxjs";
 import {describeEdrError} from "./edr-error";
-import {EdrParameter} from "./edr-parameters";
-import {EdrService, LonLatBbox} from "./edr.service";
+import {EdrParameter} from "../types/edr-parameters.type";
+import {EdrService, LonLatBbox} from "./edr-api.service";
 import {GridData} from "../data-types/grid-data";
 
 /**

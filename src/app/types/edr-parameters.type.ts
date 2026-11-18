@@ -1,4 +1,4 @@
-import {EdrDataset} from "./edr-datasets";
+import {EdrDataset} from "./edr-datasets.type";
 
 /**
  * Which data to request from an EDR service. Every parameter lives in a specific collection of a

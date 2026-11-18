@@ -1,4 +1,4 @@
-import {Gradient} from "../visualizations/gradients";
+import {Gradient} from "../types/gradients.type";
 
 const KELVIN_AT_0_CELSIUS = 273.15;
 

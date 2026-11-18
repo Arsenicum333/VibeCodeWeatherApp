@@ -1,4 +1,4 @@
-import {EdrDataset} from "../edr/edr-datasets";
+import {EdrDataset} from "../types/edr-datasets.type";
 
 /** SHMU ALADIN weather model for Slovakia: hourly forecasts for the next few days. */
 export const ALADIN_SLOVAKIA: EdrDataset = {

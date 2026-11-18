@@ -1,4 +1,4 @@
-import type {LonLatBbox} from "./edr.service";
+import type {LonLatBbox} from "../edr/edr-api.service";
 
 /**
  * One EDR service (e.g. a weather model) on api.openweather.cloud. The datasets the app uses are

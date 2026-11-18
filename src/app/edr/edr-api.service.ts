@@ -1,9 +1,9 @@
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {Injectable, inject} from "@angular/core";
 import {map, Observable} from "rxjs";
-import {Coverage} from "./coverage-json";
+import {Coverage} from "../types/coverage-json.type";
 import {EdrNoDataError} from "./edr-error";
-import {EdrParameter} from "./edr-parameters";
+import {EdrParameter} from "../types/edr-parameters.type";
 
 /** Bounding box in longitude/latitude degrees: [minLon, minLat, maxLon, maxLat]. */
 export type LonLatBbox = [number, number, number, number];

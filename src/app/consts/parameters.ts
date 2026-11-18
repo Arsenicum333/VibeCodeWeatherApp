@@ -1,4 +1,4 @@
-import {EdrParameter} from "../edr/edr-parameters";
+import {EdrParameter} from "../types/edr-parameters.type";
 import {ALADIN_SLOVAKIA} from "./datasets";
 
 /** Parameters of the ALADIN Slovakia model that are ready to use in `EdrGridSource`. */

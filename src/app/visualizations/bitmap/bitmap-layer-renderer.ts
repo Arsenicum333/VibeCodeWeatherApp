@@ -5,7 +5,7 @@ import LayerRenderer from "ol/renderer/Layer";
 import {compose as composeTransform, create as createTransform} from "ol/transform";
 import {Subscription} from "rxjs";
 import {BITMAP_FRAGMENT_SHADER, BITMAP_VERTEX_SHADER} from "./bitmap-shaders";
-import {Gradient, GradientMode, MAX_GRADIENT_STOPS} from "../gradients";
+import {Gradient, GradientMode, MAX_GRADIENT_STOPS} from "../../types/gradients.type";
 import {GridData} from "../../data-types/grid-data";
 import type {BitmapLayer} from "./bitmap-layer";
 
