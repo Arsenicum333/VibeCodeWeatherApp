@@ -3,6 +3,7 @@ import {ProjectionLike, transformExtent} from "ol/proj";
 import Source from "ol/source/Source";
 import {map, Observable, tap} from "rxjs";
 import {describeEdrError} from "./edr-error";
+import {EdrParameter} from "./edr-parameters";
 import {ALADIN_SLOVAKIA_DOMAIN, EdrService, LonLatBbox} from "./edr.service";
 import {GridData} from "../data-types/grid-data";
 
@@ -18,12 +19,12 @@ export const LOAD_ERROR_PROPERTY = "loadError";
  */
 const BBOX_MARGIN_DEG = 0.1;
 
-/** Source of grids of one EDR parameter (e.g. `temperature`), for the area the map shows. */
+/** Source of grids of one EDR parameter (e.g. temperature), for the area the map shows. */
 export class EdrGridSource extends Source {
     constructor(
         private readonly edrService: EdrService,
-        /** EDR parameter to fetch, as listed in the collection's `parameter_names`. */
-        private readonly parameterName: string
+        /** What to fetch, e.g. one of `ALADIN_PARAMETERS`. */
+        private readonly parameter: EdrParameter
     ) {
         super({attributions: "Weather data: ALADIN model by SHMU"});
     }
@@ -54,8 +55,8 @@ export class EdrGridSource extends Source {
      * the request fails and cleared when data arrives.
      */
     getGridData(bbox: LonLatBbox): Observable<GridData> {
-        return this.edrService.getCube(this.parameterName, bbox).pipe(
-            map(coverage => GridData.fromCoverage(coverage, this.parameterName)),
+        return this.edrService.getCube(this.parameter, bbox).pipe(
+            map(coverage => GridData.fromCoverage(coverage, this.parameter.parameterName)),
             tap({
                 next: () => this.set(LOAD_ERROR_PROPERTY, undefined),
                 error: (error: unknown) => this.set(LOAD_ERROR_PROPERTY, describeEdrError(error)),

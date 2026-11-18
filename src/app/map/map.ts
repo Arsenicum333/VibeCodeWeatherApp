@@ -6,6 +6,7 @@ import TileLayer from "ol/layer/Tile";
 import {fromLonLat} from "ol/proj";
 import OSM from "ol/source/OSM";
 import {EdrGridSource} from "../edr/edr-grid-source";
+import {ALADIN_PARAMETERS} from "../edr/edr-parameters";
 import {EdrService} from "../edr/edr.service";
 import {TEMPERATURE_GRADIENT_IN_KELVIN} from "../gradient";
 import {BitmapLayer} from "../visualizations/bitmap/bitmap-layer";
@@ -47,8 +48,9 @@ export class MapComponent implements OnDestroy {
         return [
             new TileLayer({source: new OSM()}),
             new BitmapLayer({
-                source: new EdrGridSource(this.edrService, "temperature"),
+                source: new EdrGridSource(this.edrService, ALADIN_PARAMETERS.temperature2m),
                 gradient: TEMPERATURE_GRADIENT_IN_KELVIN,
+                gradientMode: "linear",
                 opacity: 0.7,
             }),
         ];

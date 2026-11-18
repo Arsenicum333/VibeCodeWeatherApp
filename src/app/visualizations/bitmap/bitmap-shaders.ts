@@ -36,6 +36,8 @@ uniform sampler2D u_data;
 uniform float u_stopValues[MAX_STOPS];
 uniform vec4 u_stopColors[MAX_STOPS];
 uniform int u_stopCount;
+// true: each value gets the colour of the stop below it; false: colours are blended between stops.
+uniform bool u_stepped;
 
 // Position within the grid: (0, 0) is the north-west corner, (1, 1) the south-east corner.
 in vec2 v_uv;
@@ -70,6 +72,9 @@ vec4 gradientColor(float value) {
             break;
         }
         if (value < u_stopValues[k]) {
+            if (u_stepped) {
+                return u_stopColors[k - 1];
+            }
             float t = (value - u_stopValues[k - 1]) / (u_stopValues[k] - u_stopValues[k - 1]);
             return mix(u_stopColors[k - 1], u_stopColors[k], t);
         }

@@ -24,7 +24,7 @@ export interface GridDomain {
         /** Latitude in degrees (CRS:84). Note: runs from north to south. */
         y: RegularAxis;
         /** Vertical levels, e.g. `[2]` for 2 m above ground. */
-        z: ValuesAxis<number>;
+        z?: ValuesAxis<number>;
         /** ISO 8601 timestamps. */
         t: ValuesAxis<string>;
     };

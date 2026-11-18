@@ -5,7 +5,7 @@ import LayerRenderer from "ol/renderer/Layer";
 import {compose as composeTransform, create as createTransform} from "ol/transform";
 import {Subscription} from "rxjs";
 import {BITMAP_FRAGMENT_SHADER, BITMAP_VERTEX_SHADER} from "./bitmap-shaders";
-import {Gradient, MAX_GRADIENT_STOPS} from "../../gradient";
+import {Gradient, GradientMode, MAX_GRADIENT_STOPS} from "../../gradient";
 import {GridData} from "../../data-types/grid-data";
 import type {BitmapLayer} from "./bitmap-layer";
 
@@ -42,7 +42,7 @@ export class BitmapLayerRenderer extends LayerRenderer<BitmapLayer> {
     private requestedBboxKey?: string;
     private request?: Subscription;
 
-    constructor(layer: BitmapLayer, gradient: Gradient) {
+    constructor(layer: BitmapLayer, gradient: Gradient, gradientMode: GradientMode) {
         super(layer);
         this.canvas.style.position = "absolute";
         this.canvas.style.left = "0";
@@ -55,7 +55,7 @@ export class BitmapLayerRenderer extends LayerRenderer<BitmapLayer> {
         this.gl = gl;
         this.program = createProgram(gl, BITMAP_VERTEX_SHADER, BITMAP_FRAGMENT_SHADER);
         this.matrixLocation = gl.getUniformLocation(this.program, "u_matrix");
-        this.setGradientUniforms(gradient);
+        this.setGradientUniforms(gradient, gradientMode);
 
         this.vertexArray = gl.createVertexArray();
         this.positionBuffer = gl.createBuffer();
@@ -202,7 +202,7 @@ export class BitmapLayerRenderer extends LayerRenderer<BitmapLayer> {
         this.indexCount = mesh.indices.length;
     }
 
-    private setGradientUniforms(gradient: Gradient): void {
+    private setGradientUniforms(gradient: Gradient, gradientMode: GradientMode): void {
         if (gradient.length === 0 || gradient.length > MAX_GRADIENT_STOPS) {
             throw new Error(`A gradient needs 1 to ${MAX_GRADIENT_STOPS} stops`);
         }
@@ -210,6 +210,10 @@ export class BitmapLayerRenderer extends LayerRenderer<BitmapLayer> {
         gl.useProgram(this.program);
         gl.uniform1i(gl.getUniformLocation(this.program, "u_data"), 0);
         gl.uniform1i(gl.getUniformLocation(this.program, "u_stopCount"), gradient.length);
+        gl.uniform1i(
+            gl.getUniformLocation(this.program, "u_stepped"),
+            gradientMode === "stepped" ? 1 : 0
+        );
         gl.uniform1fv(
             gl.getUniformLocation(this.program, "u_stopValues"),
             gradient.map(stop => stop.value)

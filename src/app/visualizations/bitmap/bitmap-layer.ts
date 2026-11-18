@@ -1,11 +1,13 @@
 import Layer, {Options} from "ol/layer/Layer";
 import {EdrGridSource} from "../../edr/edr-grid-source";
-import {Gradient} from "../../gradient";
+import {Gradient, GradientMode} from "../../gradient";
 import {BitmapLayerRenderer} from "./bitmap-layer-renderer";
 
 export type BitmapLayerOptions = Options<EdrGridSource> & {
     /** Colours for the grid values. */
     gradient: Gradient;
+    /** Smooth ("linear", the default) or banded ("stepped") colours between gradient stops. */
+    gradientMode?: GradientMode;
 };
 
 /**
@@ -14,14 +16,16 @@ export type BitmapLayerOptions = Options<EdrGridSource> & {
  */
 export class BitmapLayer extends Layer<EdrGridSource, BitmapLayerRenderer> {
     private readonly gradient: Gradient;
+    private readonly gradientMode: GradientMode;
 
-    constructor({gradient, ...options}: BitmapLayerOptions) {
+    constructor({gradient, gradientMode = "linear", ...options}: BitmapLayerOptions) {
         super(options);
         this.gradient = gradient;
+        this.gradientMode = gradientMode;
     }
 
     /** Called by OpenLayers when the layer is first rendered. */
     override createRenderer(): BitmapLayerRenderer {
-        return new BitmapLayerRenderer(this, this.gradient);
+        return new BitmapLayerRenderer(this, this.gradient, this.gradientMode);
     }
 }
