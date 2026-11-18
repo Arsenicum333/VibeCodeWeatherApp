@@ -35,6 +35,12 @@ Once the server is running, open your browser and navigate to `http://localhost:
 
 This is a workshop demo focused on EDR weather data and OpenLayers, so it intentionally has no unit or end-to-end tests.
 
+## License
+
+The code in this repository is released under the [MIT License](LICENSE).
+
+The license covers only the code. The weather data it loads from [OpenWeather](https://api.openweather.cloud/) (for example the ALADIN model by SHMU) is not part of this repository and is subject to its providers' own terms.
+
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
