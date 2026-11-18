@@ -5,9 +5,9 @@ description: Use when the user wants data from a weather model, satellite, radar
 
 # Adding a new EDR dataset (model, satellite, radar)
 
-The app reads weather data from EDR services (OGC Environmental Data Retrieval) on api.openweather.cloud. Each service is one **dataset**, described by an `EdrDataset` constant in `src/app/edr/edr-datasets.ts`. So far there is one: `ALADIN_SLOVAKIA` (`https://api.openweather.cloud/edr/shmu/aladin/slovakia`).
+The app reads weather data from EDR services (OGC Environmental Data Retrieval) on api.openweather.cloud. Each service is one **dataset**, described by an `EdrDataset` constant in `src/app/consts/datasets.ts`. So far there is one: `ALADIN_SLOVAKIA` (`https://api.openweather.cloud/edr/shmu/aladin/slovakia`).
 
-Also follow the `extend-weather-map` skill: its rules (in particular rule 6 about `EdrParameter`) apply here too.
+Also follow the `extend-weather-map` skill: its rules (in particular rule 7 about `EdrParameter`) apply here too.
 
 ## 1. Ask the user for the EDR URL
 
@@ -54,7 +54,7 @@ Check every point; the app works unchanged only if all of them pass:
 | Status `200` and a CoverageJSON body. `204 No Content` means no data for this time, level or area.                                      | Fix the parameters. If the current hour is not in the collection's `extent.temporal.values` (e.g. analysis-only collections, satellites, model runs that end earlier), explain this to the user before changing anything: `EdrService` always requests the current hour. |
 | The response has the header `Access-Control-Allow-Origin` (the browser needs it).                                                       | The browser cannot use this service directly; tell the user.                                                                                                                                                                                                             |
 | `CRS:84` is in the collection's `crs` list, and `CoverageJSON` is among the cube query's `output_formats`.                              | The app cannot read this collection; tell the user.                                                                                                                                                                                                                      |
-| The response is at most a few MB for the area the map shows (check the size of `/tmp/edr-test.json` and `domain.axes.x.num` × `y.num`). | Global models and satellites can return tens of MB. The cube query accepts `resolution-x` and `resolution-y` (number of grid points per axis); supporting it means an optional field on `EdrParameter` (rule 6) and a change in `EdrService`. Check with the user first. |
+| The response is at most a few MB for the area the map shows (check the size of `/tmp/edr-test.json` and `domain.axes.x.num` × `y.num`). | Global models and satellites can return tens of MB. The cube query accepts `resolution-x` and `resolution-y` (number of grid points per axis); supporting it means an optional field on `EdrParameter` (rule 7) and a change in `EdrService`. Check with the user first. |
 
 ## 4. Find the dataset's area (`domain`) in longitude/latitude
 
@@ -80,13 +80,13 @@ print('lon', min(p[0] for p in pts), max(p[0] for p in pts), 'lat', min(p[1] for
 
 A new dataset needs **no changes to general code** (`EdrService`, `EdrGridSource`, `BitmapLayer`) as long as every check in step 3 passed:
 
-1. **Dataset**: add an `EdrDataset` constant to `src/app/edr/edr-datasets.ts`, named after the provider and model, e.g. `CHMI_ALADIN_EUROPE` or `DWD_ICON_GLOBAL`, with `baseUrl` (no trailing slash), `domain` from step 4 and an `attribution` such as `"Weather data: ICON model by DWD"`.
-2. **Parameters**: add a constant to `src/app/edr/edr-parameters.ts`, e.g. `DWD_ICON_GLOBAL_PARAMETERS`, with entries like `temperature2m: {dataset: DWD_ICON_GLOBAL, collectionId, parameterName, z}`, typed `satisfies Record<string, EdrParameter>`. Do not create a new parameter type (rule 6 of `extend-weather-map`).
-3. **Gradient**: reuse an existing gradient when the unit matches (e.g. `TEMPERATURE_GRADIENT_IN_KELVIN` for temperature in K); otherwise add one to `src/app/visualizations/gradients.ts` with stop values in the data's unit.
+1. **Dataset**: add an `EdrDataset` constant to `src/app/consts/datasets.ts`, named after the provider and model, e.g. `CHMI_ALADIN_EUROPE` or `DWD_ICON_GLOBAL`, with `baseUrl` (no trailing slash), `domain` from step 4 and an `attribution` such as `"Weather data: ICON model by DWD"`.
+2. **Parameters**: add a constant to `src/app/consts/parameters.ts`, e.g. `DWD_ICON_GLOBAL_PARAMETERS`, with entries like `temperature2m: {dataset: DWD_ICON_GLOBAL, collectionId, parameterName, z}`, typed `satisfies Record<string, EdrParameter>`. Do not create a new parameter type (rule 7 of `extend-weather-map`).
+3. **Gradient**: reuse an existing gradient when the unit matches (e.g. `TEMPERATURE_GRADIENT_IN_KELVIN` for temperature in K); otherwise add one to `src/app/consts/gradients.ts` with stop values in the data's unit.
 4. **Layer**: add a `BitmapLayer` with an `EdrGridSource` for the new parameter to `createLayers()` in `src/app/map/map.ts`.
 5. **Map view**: the map opens over Slovakia. If the new dataset does not cover it, ask the user whether to move the initial view (`center` and `zoom` of the `View` in `createMap()`).
 
-Dataset-specific values (URLs, areas, credits, collection IDs) go only into these constants, never into `EdrService`, `EdrGridSource` or other general code.
+Dataset-specific values (URLs, areas, credits, collection IDs) go only into these constants, never into `EdrService`, `EdrGridSource` or other general code. The constants in `consts/` simulate configuration that a real app would get from the user through a UI (e.g. "add a dataset by URL") or from a config file, so keep them plain data and import them only in `MapComponent` (rule 2 of `extend-weather-map`).
 
 ## 6. Check the result
 

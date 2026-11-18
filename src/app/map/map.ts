@@ -5,11 +5,11 @@ import BaseLayer from "ol/layer/Base";
 import TileLayer from "ol/layer/Tile";
 import {fromLonLat} from "ol/proj";
 import OSM from "ol/source/OSM";
+import {TEMPERATURE_GRADIENT_IN_KELVIN} from "../consts/gradients";
+import {ALADIN_PARAMETERS} from "../consts/parameters";
 import {EdrGridSource} from "../edr/edr-grid-source";
-import {ALADIN_PARAMETERS} from "../edr/edr-parameters";
 import {EdrService} from "../edr/edr.service";
 import {BitmapLayer} from "../visualizations/bitmap/bitmap-layer";
-import {TEMPERATURE_GRADIENT_IN_KELVIN} from "../visualizations/gradients";
 import {MapLayersHelperService} from "./map-layers-helper.service";
 
 @Component({
