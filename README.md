@@ -1,13 +1,12 @@
 # Noc26
 
-This workshop demonstrates how to use weather data from an EDR service and how to visualize it on a map with OpenLayers.
+# Lore
 
-## Workshop parts
+You're building an app for a group of friends who are planning a barbecue. If it rains, they won't get the fire going, and if it's cold, nobody will want to sit outside.
 
-1. **Weather data from EDR.** [OGC API – Environmental Data Retrieval (EDR)](https://ogcapi.ogc.org/edr/) is an open standard for requesting weather and other environmental data over HTTP. The app fetches the 2 m air temperature forecast from the [SHMU ALADIN model for Slovakia](https://api.openweather.cloud/edr/shmu/aladin/slovakia) on the OpenWeather EDR service, which needs no authentication. See `src/app/edr/` (requests and the OpenLayers source), `src/app/consts/` (which dataset, parameters and colours to use) and `src/app/types/`.
-2. **Visualization with OpenLayers.** [OpenLayers](https://openlayers.org/) shows a full-screen map with an OpenStreetMap base layer, and the weather data is displayed on top of it by a custom WebGL layer. See `src/app/map/` (the map and its layers) and `src/app/visualizations/` (the layer and its renderer).
+The friends want to see on a map of Slovakia where it will rain, and to go through the day hour by hour so they know when to head out. It must be clear what each colour means. When they click on the place they want to go, they want to know what the temperature will be there.
 
-The project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.7.
+Your friend already started work on the application and sent you partially developed one, there are some bugs you have to fix first.
 
 ## Installing packages
 
