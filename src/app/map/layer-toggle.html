@@ -1,0 +1,12 @@
+<div class="layers">
+    <div class="layers-header">
+        <span class="layers-title">Layers</span>
+    </div>
+    @for (layer of layerOptions; track layer.id) {
+        <label class="layer-item">
+            <input type="checkbox" [checked]="layers()[layer.id]" (change)="toggleLayer(layer.id)" />
+            <span class="layer-icon">{{ layer.icon }}</span>
+            <span class="layer-label">{{ layer.label }}</span>
+        </label>
+    }
+</div>

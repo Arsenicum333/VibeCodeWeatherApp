@@ -1,0 +1,70 @@
+:host {
+    display: block;
+}
+
+.layers {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 180px;
+    padding: 10px 12px;
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    background: var(--panel);
+    backdrop-filter: var(--panel-blur);
+    box-shadow: var(--panel-shadow);
+    font-size: 13px;
+}
+
+.layers-header {
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--grid);
+    margin-bottom: 2px;
+}
+
+.layers-title {
+    color: var(--text);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.layer-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.15s;
+    user-select: none;
+}
+
+.layer-item:hover {
+    background: var(--accent-soft);
+}
+
+.layer-item input[type="checkbox"] {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+}
+
+.layer-icon {
+    font-size: 14px;
+    min-width: 18px;
+}
+
+.layer-label {
+    color: var(--text);
+    font-weight: 500;
+    flex: 1;
+}
+
+.layer-item input[type="checkbox"]:disabled + .layer-icon,
+.layer-item input[type="checkbox"]:disabled ~ .layer-label {
+    opacity: 0.5;
+    color: var(--text-muted);
+}

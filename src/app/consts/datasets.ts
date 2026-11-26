@@ -6,3 +6,10 @@ export const ALADIN_SLOVAKIA: EdrDataset = {
     domain: [16.8, 47.7, 22.6, 49.7],
     attribution: "Weather data: ALADIN model by SHMU",
 };
+
+/** SHMU weather radar composites: observations every 5 minutes (clipped to Slovakia area). */
+export const SHMU_RADARS: EdrDataset = {
+    baseUrl: "https://api.openweather.cloud/edr/radars",
+    domain: [16.8, 47.7, 22.6, 49.7],
+    attribution: "Radar data: SHMU",
+};

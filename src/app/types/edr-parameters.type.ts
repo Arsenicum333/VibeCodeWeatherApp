@@ -11,4 +11,9 @@ export interface EdrParameter {
     collectionId: string;
     parameterName: string;
     z?: string;
+    /**
+     * Grid points per axis to request (EDR `resolution-x` and `resolution-y`). Leave it out to get
+     * the service's own resolution; set it for fine grids (e.g. radar) whose answers would be too large.
+     */
+    gridSize?: number;
 }

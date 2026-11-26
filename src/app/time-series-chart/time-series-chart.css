@@ -1,0 +1,89 @@
+:host {
+    /* Warm orange for temperature; passes 3:1 contrast on the light panel. */
+    --chart-line: #d9480f;
+    display: block;
+}
+
+.header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.title {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.readout {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
+}
+
+.readout strong {
+    color: var(--text);
+    font-size: 14px;
+}
+
+.readout-time {
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    touch-action: none;
+    cursor: crosshair;
+}
+
+.grid {
+    stroke: var(--grid);
+    stroke-width: 1;
+}
+
+.grid.day {
+    stroke-dasharray: 2 3;
+}
+
+.axis-label {
+    fill: var(--text-muted);
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+}
+
+.area {
+    fill: url(#chart-area);
+}
+
+.line {
+    fill: none;
+    stroke: var(--chart-line);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.selected {
+    stroke: var(--accent);
+    stroke-width: 1.5;
+}
+
+.crosshair {
+    stroke: var(--text-muted);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+}
+
+/* Surface-coloured ring keeps the dot readable on top of the line. */
+.dot {
+    fill: var(--chart-line);
+    stroke: var(--panel-solid);
+    stroke-width: 2;
+}

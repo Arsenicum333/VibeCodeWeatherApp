@@ -1,0 +1,47 @@
+<div class="info-toggle">
+    <button
+        type="button"
+        class="info-btn"
+        [attr.aria-expanded]="isOpen()"
+        (click)="toggleOpen()"
+        aria-label="Help and information"
+    >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <text x="12" y="16" text-anchor="middle" font-size="16" font-weight="bold">i</text>
+        </svg>
+    </button>
+</div>
+
+@if (isOpen()) {
+    <div class="info-panel">
+        <div class="info-header">
+            <h2>Quick Tips</h2>
+            <button type="button" class="info-close" aria-label="Close" (click)="toggleOpen()">
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" /></svg>
+            </button>
+        </div>
+        <div class="info-content">
+            <div class="tip">
+                <span class="tip-icon">🗺️</span>
+                <span>Drag to pan, scroll to zoom</span>
+            </div>
+            <div class="tip">
+                <span class="tip-icon">🎚️</span>
+                <span>Use the slider to browse past and future hours</span>
+            </div>
+            <div class="tip">
+                <span class="tip-icon">🖱️</span>
+                <span>Click anywhere to see detailed weather forecast</span>
+            </div>
+            <div class="tip">
+                <span class="tip-icon">👁️</span>
+                <span>Toggle layers to show/hide weather data</span>
+            </div>
+            <div class="tip">
+                <span class="tip-icon">📊</span>
+                <span>View temperature trend chart in the popup</span>
+            </div>
+        </div>
+    </div>
+}

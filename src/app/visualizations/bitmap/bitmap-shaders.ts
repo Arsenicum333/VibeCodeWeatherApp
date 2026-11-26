@@ -1,5 +1,8 @@
 import {MAX_GRADIENT_STOPS} from "../../types/gradients.type";
 
+/** Most points a clip polygon (see `BitmapLayerOptions.clipPolygon`) may have. */
+export const MAX_CLIP_POINTS = 128;
+
 /**
  * Draws a mesh whose vertices are in map coordinates. `u_matrix` turns map coordinates into
  * WebGL clip space (-1..1), based on the current view centre, resolution and rotation.
@@ -29,6 +32,7 @@ precision highp int;
 precision highp sampler2D;
 
 const int MAX_STOPS = ${MAX_GRADIENT_STOPS};
+const int MAX_CLIP_POINTS = ${MAX_CLIP_POINTS};
 
 // Two channels per grid point: (value, 1) where there is data and (0, 0) where it is missing.
 // See packGridTexels() in bitmap-layer-renderer.ts.
@@ -38,6 +42,11 @@ uniform vec4 u_stopColors[MAX_STOPS];
 uniform int u_stopCount;
 // true: each value gets the colour of the stop below it; false: colours are blended between stops.
 uniform bool u_stepped;
+// Longitude/latitude covered by the mesh: [west, south, east, north].
+uniform vec4 u_meshExtent;
+// Optional clip polygon in longitude/latitude; nothing is clipped when u_clipCount < 3.
+uniform vec2 u_clipPoints[MAX_CLIP_POINTS];
+uniform int u_clipCount;
 
 // Position within the grid: (0, 0) is the north-west corner, (1, 1) the south-east corner.
 in vec2 v_uv;
@@ -61,6 +70,27 @@ vec2 interpolateGrid(vec2 uv) {
     vec2 north = mix(gridPoint(cell), gridPoint(cell + ivec2(1, 0)), t.x);
     vec2 south = mix(gridPoint(cell + ivec2(0, 1)), gridPoint(cell + ivec2(1, 1)), t.x);
     return mix(north, south, t.y);
+}
+
+// Even-odd rule: a point is inside when a ray going east from it crosses the outline an odd
+// number of times.
+bool insideClipPolygon(vec2 p) {
+    bool inside = false;
+    vec2 previous = u_clipPoints[0];
+    for (int k = 1; k <= MAX_CLIP_POINTS; k++) {
+        if (k > u_clipCount) {
+            break;
+        }
+        vec2 current = u_clipPoints[k == u_clipCount ? 0 : k];
+        if ((current.y > p.y) != (previous.y > p.y)) {
+            float crossLon = current.x + (p.y - current.y) * (previous.x - current.x) / (previous.y - current.y);
+            if (p.x < crossLon) {
+                inside = !inside;
+            }
+        }
+        previous = current;
+    }
+    return inside;
 }
 
 vec4 gradientColor(float value) {
@@ -88,6 +118,14 @@ void main() {
     // Draw only where at least half of the neighbourhood has data. The edge of the data then lies
     // halfway between the last valid grid point and the first missing one.
     if (dataShare < 0.5) {
+        discard;
+    }
+    // Clip to the polygon (e.g. the border of Slovakia): v_uv is linear in lon/lat over the mesh.
+    vec2 lonLat = vec2(
+        mix(u_meshExtent.x, u_meshExtent.z, v_uv.x),
+        mix(u_meshExtent.w, u_meshExtent.y, v_uv.y)
+    );
+    if (u_clipCount >= 3 && !insideClipPolygon(lonLat)) {
         discard;
     }
     // Dividing by the share of valid points ignores the missing ones in the average.

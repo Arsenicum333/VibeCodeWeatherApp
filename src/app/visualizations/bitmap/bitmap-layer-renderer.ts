@@ -4,7 +4,8 @@ import {getTransform, Projection} from "ol/proj";
 import LayerRenderer from "ol/renderer/Layer";
 import {compose as composeTransform, create as createTransform} from "ol/transform";
 import {Subscription} from "rxjs";
-import {BITMAP_FRAGMENT_SHADER, BITMAP_VERTEX_SHADER} from "./bitmap-shaders";
+import {BITMAP_FRAGMENT_SHADER, BITMAP_VERTEX_SHADER, MAX_CLIP_POINTS} from "./bitmap-shaders";
+import {LonLat, LonLatBbox} from "../../edr/edr-api.service";
 import {Gradient, GradientMode, MAX_GRADIENT_STOPS} from "../../types/gradients.type";
 import {GridData} from "../../data-types/grid-data";
 import type {BitmapLayer} from "./bitmap-layer";
@@ -39,10 +40,15 @@ export class BitmapLayerRenderer extends LayerRenderer<BitmapLayer> {
      * Web Mercator coordinates are in millions of metres and would lose precision as 32-bit floats.
      */
     private meshOrigin: [number, number] = [0, 0];
-    private requestedBboxKey?: string;
+    private requestedKey?: string;
     private request?: Subscription;
 
-    constructor(layer: BitmapLayer, gradient: Gradient, gradientMode: GradientMode) {
+    constructor(
+        layer: BitmapLayer,
+        gradient: Gradient,
+        gradientMode: GradientMode,
+        clipPolygon?: LonLat[]
+    ) {
         super(layer);
         this.canvas.style.position = "absolute";
         this.canvas.style.left = "0";
@@ -56,6 +62,7 @@ export class BitmapLayerRenderer extends LayerRenderer<BitmapLayer> {
         this.program = createProgram(gl, BITMAP_VERTEX_SHADER, BITMAP_FRAGMENT_SHADER);
         this.matrixLocation = gl.getUniformLocation(this.program, "u_matrix");
         this.setGradientUniforms(gradient, gradientMode);
+        this.setClipUniforms(clipPolygon ?? []);
 
         this.vertexArray = gl.createVertexArray();
         this.positionBuffer = gl.createBuffer();
@@ -144,18 +151,20 @@ export class BitmapLayerRenderer extends LayerRenderer<BitmapLayer> {
         const source = this.getLayer().getSource();
         const projection = frameState.viewState.projection;
         const bbox = source?.getRequestBbox(frameState.extent!, projection);
-        const bboxKey = bbox?.join(",") ?? "outside";
-        if (bboxKey === this.requestedBboxKey) {
+        const time = source?.getTime();
+        // A new area or a new time needs new data; the old grid stays visible until it arrives.
+        const requestKey = `${bbox?.join(",") ?? "outside"}@${time}`;
+        if (requestKey === this.requestedKey) {
             return;
         }
-        this.requestedBboxKey = bboxKey;
+        this.requestedKey = requestKey;
         this.request?.unsubscribe();
 
-        if (!source || !bbox) {
+        if (!source || !bbox || time === undefined) {
             this.indexCount = 0;
             return;
         }
-        this.request = source.getGridData(bbox).subscribe({
+        this.request = source.getGridData(bbox, time).subscribe({
             next: grid => {
                 this.uploadGrid(grid, projection);
                 // Asks the map to render again, now with the new data.
@@ -164,7 +173,7 @@ export class BitmapLayerRenderer extends LayerRenderer<BitmapLayer> {
             error: (error: unknown) => {
                 console.error("Failed to load the grid data", error);
                 // Allow the same area to be requested again after the next map move.
-                this.requestedBboxKey = undefined;
+                this.requestedKey = undefined;
             },
         });
     }
@@ -192,6 +201,8 @@ export class BitmapLayerRenderer extends LayerRenderer<BitmapLayer> {
 
         const mesh = createGridMesh(grid, projection);
         this.meshOrigin = mesh.origin;
+        gl.useProgram(this.program);
+        gl.uniform4fv(gl.getUniformLocation(this.program, "u_meshExtent"), mesh.lonLatExtent);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, mesh.positions, gl.STATIC_DRAW);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
@@ -222,6 +233,19 @@ export class BitmapLayerRenderer extends LayerRenderer<BitmapLayer> {
             gl.getUniformLocation(this.program, "u_stopColors"),
             gradient.flatMap(stop => stop.color.map(channel => channel / 255))
         );
+    }
+
+    /** Passes the clip polygon to the shader; with fewer than 3 points nothing is clipped. */
+    private setClipUniforms(polygon: LonLat[]): void {
+        if (polygon.length > MAX_CLIP_POINTS) {
+            throw new Error(`A clip polygon may have at most ${MAX_CLIP_POINTS} points`);
+        }
+        const gl = this.gl;
+        gl.useProgram(this.program);
+        gl.uniform1i(gl.getUniformLocation(this.program, "u_clipCount"), polygon.length);
+        if (polygon.length > 0) {
+            gl.uniform2fv(gl.getUniformLocation(this.program, "u_clipPoints"), polygon.flat());
+        }
     }
 
     private bindAttribute(name: string, buffer: WebGLBuffer): void {
@@ -268,7 +292,14 @@ function packGridTexels(values: Float32Array): Float32Array {
 function createGridMesh(
     grid: GridData,
     projection: Projection
-): {positions: Float32Array; uvs: Float32Array; indices: Uint16Array; origin: [number, number]} {
+): {
+    positions: Float32Array;
+    uvs: Float32Array;
+    indices: Uint16Array;
+    origin: [number, number];
+    /** Longitude/latitude the mesh covers: [west, south, east, north]. */
+    lonLatExtent: LonLatBbox;
+} {
     const toMap = getTransform("EPSG:4326", projection);
     if (!toMap) {
         throw new Error(`Cannot reproject the grid to ${projection.getCode()}`);
@@ -305,7 +336,7 @@ function createGridMesh(
         }
     }
 
-    return {positions, uvs, indices, origin};
+    return {positions, uvs, indices, origin, lonLatExtent: [west, south, east, north]};
 }
 
 function createProgram(

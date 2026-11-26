@@ -1,0 +1,19 @@
+<div class="title">{{ legend().title }}</div>
+
+@if (legend().gradientMode === "stepped") {
+    <div class="bar">
+        @for (band of bands(); track $index) {
+            <div class="band" [style.background]="band.color"></div>
+        }
+    </div>
+} @else {
+    <div class="bar">
+        <div class="band" [style.background-image]="linearBackground()"></div>
+    </div>
+}
+
+<div class="labels">
+    @for (band of bands(); track $index) {
+        <span class="label" [style.left.%]="labelPosition($index)">{{ band.label }}</span>
+    }
+</div>

@@ -3,6 +3,7 @@
     display: block;
     width: 100%;
     height: 100%;
+    overflow: hidden;
 }
 
 .map {
@@ -10,20 +11,256 @@
     height: 100%;
 }
 
-/* Banner at the top centre of the map, above the map controls. */
+/* Shared look of the panels floating over the map. */
+.brand,
+.load-error,
+.popup {
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    background: var(--panel);
+    backdrop-filter: var(--panel-blur);
+    box-shadow: var(--panel-shadow);
+}
+
+/* Title card in the top-left corner, above the zoom buttons. */
+.brand {
+    position: absolute;
+    top: var(--gap);
+    left: var(--gap);
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px 10px 12px;
+}
+
+.brand-icon {
+    width: 32px;
+    height: 32px;
+    padding: 6px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    fill: #fff;
+    box-sizing: border-box;
+}
+
+.brand h1 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.brand p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+/* Banner at the top centre of the map. */
 .load-error {
     position: absolute;
-    top: 12px;
+    top: var(--gap);
     left: 50%;
-    transform: translateX(-50%);
-    z-index: 1;
-    max-width: calc(100% - 120px);
-    padding: 8px 16px;
-    border-radius: 4px;
-    background: rgba(176, 0, 32, 0.9);
-    color: #fff;
-    font:
-        14px/1.4 system-ui,
-        sans-serif;
+    z-index: 2;
+    max-width: calc(100% - 360px);
+    padding: 10px 16px;
+    border-color: rgba(180, 35, 24, 0.3);
+    background: rgba(254, 243, 242, 0.95);
+    color: var(--danger);
+    font-size: 13px;
+    font-weight: 500;
     text-align: center;
+    transform: translateX(-50%);
+}
+
+/* Legends stacked in the bottom-left corner, above the timeline. */
+.legends {
+    position: absolute;
+    bottom: 112px;
+    left: var(--gap);
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: calc(100% - 2 * var(--gap));
+}
+
+/* Layer toggle controls in the top-right corner. */
+.layer-controls {
+    position: absolute;
+    top: var(--gap);
+    right: var(--gap);
+    z-index: 1;
+}
+
+/* Timeline bar along the bottom of the map. */
+.time-slider {
+    position: absolute;
+    right: var(--gap);
+    bottom: var(--gap);
+    left: var(--gap);
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+@media (max-width: 700px) {
+    .load-error {
+        top: 80px;
+        max-width: calc(100% - 2 * var(--gap));
+    }
+
+    .legends {
+        display: none;
+    }
+}
+
+/* Weather at the clicked point: a pin on the point and a popup above it (below near the top). */
+.point-weather {
+    position: absolute;
+    z-index: 3;
+    width: 0;
+    height: 0;
+}
+
+.point-weather::after {
+    content: "";
+    position: absolute;
+    top: -7px;
+    left: -7px;
+    width: 14px;
+    height: 14px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 1px 6px rgba(15, 23, 42, 0.45);
+    box-sizing: border-box;
+}
+
+.popup {
+    position: absolute;
+    bottom: 16px;
+    left: 0;
+    width: 300px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.94);
+    transform: translateX(-50%);
+    animation: popup-in 0.15s ease-out;
+}
+
+.point-weather.below .popup {
+    top: 16px;
+    bottom: auto;
+}
+
+@keyframes popup-in {
+    from {
+        opacity: 0;
+        translate: 0 4px;
+    }
+}
+
+.popup-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.popup-place {
+    font-size: 14px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.popup-time {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.popup-close {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    margin: -4px -6px 0 0;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.popup-close:hover {
+    background: rgba(15, 23, 42, 0.07);
+    color: var(--text);
+}
+
+.popup-close svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.popup-error {
+    margin-top: 8px;
+    color: var(--danger);
+    font-size: 13px;
+}
+
+.popup-values {
+    margin: 10px 0 0;
+}
+
+.popup-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 5px 0;
+    border-top: 1px solid var(--grid);
+}
+
+.popup-row dt {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.popup-row-time {
+    margin-left: 2px;
+    color: var(--text-muted);
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+.popup-row dd {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.popup-row dd.empty {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.popup-chart {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--grid);
+}
+
+.popup-chart-placeholder {
+    display: grid;
+    place-items: center;
+    height: 60px;
+    margin-top: 8px;
+    border-top: 1px solid var(--grid);
+    color: var(--text-muted);
+    font-size: 12px;
 }

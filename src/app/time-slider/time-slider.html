@@ -1,0 +1,47 @@
+<div class="controls">
+    <button
+        type="button"
+        class="icon"
+        aria-label="Previous time"
+        [disabled]="selectedIndex() === 0"
+        (click)="step(-1)"
+    >
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
+    </button>
+    <button
+        type="button"
+        class="icon"
+        aria-label="Next time"
+        [disabled]="selectedIndex() === times().length - 1"
+        (click)="step(1)"
+    >
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" /></svg>
+    </button>
+    <div class="time">
+        <span class="time-value">{{ selectedTime() | date: "EEE d MMM, HH:mm" }}</span>
+        <span class="badge" [class.forecast]="!isPast()">{{ isPast() ? "Observed" : "Forecast" }}</span>
+    </div>
+    <button type="button" class="now" (click)="selectNow()">Now</button>
+</div>
+
+<div class="slider">
+    <!-- [max] must be bound before [value], otherwise the browser clamps the value to the old maximum. -->
+    <input
+        type="range"
+        aria-label="Time"
+        [min]="startMs()"
+        [max]="endMs()"
+        [step]="stepMs"
+        [value]="selectedMs()"
+        [style.background]="trackBackground()"
+        (input)="onInput($any($event.target).valueAsNumber)"
+    />
+    <div class="ticks" aria-hidden="true">
+        @for (day of days(); track day.time) {
+            <span class="day" [style.left.%]="day.percent">{{ day.time | date: "EEE d" }}</span>
+        }
+        @if (nowPercent(); as now) {
+            <span class="now-marker" [style.left.%]="now">now</span>
+        }
+    </div>
+</div>

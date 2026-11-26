@@ -1,9 +1,100 @@
 <div #mapContainer class="map"></div>
 
+<header class="brand">
+    <svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 9.5a4 4 0 0 1-.5 8.5Z" />
+    </svg>
+    <div>
+        <h1>Slovakia Weather</h1>
+        <p>ALADIN forecast · SHMU radar</p>
+    </div>
+</header>
+
 @if (mapLayersHelper.loadErrors().length > 0) {
     <div class="load-error" role="alert">
         @for (message of mapLayersHelper.loadErrors(); track $index) {
             <div>{{ message }}</div>
         }
+    </div>
+}
+
+@if (mapLayersHelper.legends().length > 0) {
+    <div class="legends">
+        @for (legend of mapLayersHelper.legends(); track $index) {
+            <app-legend [legend]="legend" />
+        }
+    </div>
+}
+
+<div class="layer-controls">
+    <app-info-panel />
+    <app-layer-toggle [(layers)]="layerStates" />
+</div>
+
+@if (mapLayersHelper.availableTimes().length > 0) {
+    <div class="time-slider">
+        <app-time-slider [times]="mapLayersHelper.availableTimes()" [(selectedTime)]="selectedTime" />
+    </div>
+}
+
+@if (mapLayersHelper.pointWeather(); as point) {
+    <div
+        class="point-weather"
+        [class.below]="point.pixel[1] < 380"
+        [style.left.px]="point.pixel[0]"
+        [style.top.px]="point.pixel[1]"
+    >
+        <div class="popup" role="dialog" aria-label="Weather at the clicked point">
+            <div class="popup-header">
+                <div>
+                    <div class="popup-place">
+                        {{ point.lonLat[1] | number: "1.2-2" }}° N,
+                        {{ point.lonLat[0] | number: "1.2-2" }}° E
+                    </div>
+                    <div class="popup-time">{{ point.time | date: "EEE d MMM, HH:mm" }}</div>
+                </div>
+                <button
+                    type="button"
+                    class="popup-close"
+                    aria-label="Close"
+                    (click)="mapLayersHelper.clearPointWeather()"
+                >
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" /></svg>
+                </button>
+            </div>
+
+            @if (point.error) {
+                <div class="popup-error">{{ point.error }}</div>
+            } @else {
+                <dl class="popup-values">
+                    @for (item of point.values; track item.label) {
+                        <div class="popup-row">
+                            <dt>
+                                {{ item.label }}
+                                @if (item.time && item.time !== point.time) {
+                                    <span class="popup-row-time"
+                                        >at {{ item.time | date: "HH:mm" }}</span
+                                    >
+                                }
+                            </dt>
+                            <dd [class.empty]="!point.loading && item.value === undefined">
+                                {{ point.loading ? "…" : (item.value ?? "—") }}
+                            </dd>
+                        </div>
+                    }
+                </dl>
+            }
+
+            @if (point.seriesLoading) {
+                <div class="popup-chart-placeholder">Loading forecast…</div>
+            }
+            @for (series of point.series; track series.title) {
+                <app-time-series-chart
+                    class="popup-chart"
+                    [series]="series"
+                    [selectedTime]="point.time"
+                />
+            }
+        </div>
     </div>
 }

@@ -1,0 +1,68 @@
+<div class="header">
+    <span class="title">{{ series().title }}</span>
+    @if (highlighted(); as point) {
+        <span class="readout" [class.hover]="isHovering()">
+            <strong>{{ point.value | number: "1.1-1" }}</strong>
+            <span class="readout-time">{{ point.time | date: "EEE HH:mm" }}</span>
+        </span>
+    }
+</div>
+
+<svg
+    [attr.viewBox]="'0 0 ' + width + ' ' + height"
+    role="img"
+    [attr.aria-label]="series().title + ' over time'"
+    (pointermove)="onPointerMove($event)"
+    (pointerleave)="onPointerLeave()"
+>
+    <defs>
+        <linearGradient id="chart-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--chart-line)" stop-opacity="0.22" />
+            <stop offset="100%" stop-color="var(--chart-line)" stop-opacity="0" />
+        </linearGradient>
+    </defs>
+
+    @for (tick of yTicks(); track tick) {
+        <line
+            class="grid"
+            [attr.x1]="plotLeft"
+            [attr.x2]="plotRight"
+            [attr.y1]="y(tick)"
+            [attr.y2]="y(tick)"
+        />
+        <text class="axis-label" text-anchor="end" [attr.x]="plotLeft - 5" [attr.y]="y(tick) + 3.5">
+            {{ tick }}
+        </text>
+    }
+    @for (tick of dayTicks(); track tick.time) {
+        <line
+            class="grid day"
+            [attr.x1]="tick.x"
+            [attr.x2]="tick.x"
+            [attr.y1]="plotTop"
+            [attr.y2]="plotBottom"
+        />
+        <text class="axis-label" [attr.x]="tick.x + 3" [attr.y]="plotBottom + 13">
+            {{ tick.time | date: "EEE d" }}
+        </text>
+    }
+
+    <path class="area" [attr.d]="areaPath()" />
+    <path class="line" [attr.d]="linePath()" />
+
+    @if (selectedX(); as x) {
+        <line class="selected" [attr.x1]="x" [attr.x2]="x" [attr.y1]="plotTop" [attr.y2]="plotBottom" />
+    }
+    @if (highlighted(); as point) {
+        @if (isHovering()) {
+            <line
+                class="crosshair"
+                [attr.x1]="point.x"
+                [attr.x2]="point.x"
+                [attr.y1]="plotTop"
+                [attr.y2]="plotBottom"
+            />
+        }
+        <circle class="dot" [attr.cx]="point.x" [attr.cy]="point.y" r="4" />
+    }
+</svg>

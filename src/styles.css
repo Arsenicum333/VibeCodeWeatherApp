@@ -1,7 +1,145 @@
-/* You can add global styles to this file, and also import other style files */
+/* Design tokens shared by all panels over the map. */
+:root {
+    --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --text: #1c2430;
+    --text-muted: #5b6676;
+    --accent: #2563eb;
+    --accent-soft: rgba(37, 99, 235, 0.12);
+    --danger: #b42318;
+    --success: #16a34a;
+    --warning: #ea8c55;
+    --panel: rgba(255, 255, 255, 0.86);
+    --panel-solid: #ffffff;
+    --panel-border: rgba(15, 23, 42, 0.08);
+    --panel-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.12);
+    --panel-blur: blur(14px) saturate(1.4);
+    --grid: rgba(15, 23, 42, 0.1);
+    --radius: 12px;
+    --radius-small: 8px;
+    --gap: 12px;
+    color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text: #f1f5f9;
+        --text-muted: #cbd5e1;
+        --accent: #60a5fa;
+        --accent-soft: rgba(96, 165, 250, 0.15);
+        --danger: #ef5350;
+        --success: #4caf50;
+        --warning: #ff9800;
+        --panel: rgba(30, 41, 59, 0.86);
+        --panel-solid: #1e293b;
+        --panel-border: rgba(255, 255, 255, 0.1);
+        --panel-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.5);
+        --panel-blur: blur(14px) saturate(0.9);
+        --grid: rgba(255, 255, 255, 0.1);
+        color-scheme: dark;
+    }
+}
+
 html,
 body {
     margin: 0;
     height: 100%;
     overflow: hidden;
+    background: #e9edf2;
+    color: var(--text);
+    font: 14px/1.4 var(--font);
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+    html,
+    body {
+        background: #0f172a;
+    }
+}
+
+button {
+    font: inherit;
+    color: inherit;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/*
+ * OpenLayers controls, restyled to match the panels. They are created by OpenLayers outside the
+ * Angular components, so their styles have to be global.
+ */
+.ol-control {
+    padding: 0;
+    border-radius: var(--radius-small);
+    background: var(--panel);
+    backdrop-filter: var(--panel-blur);
+    box-shadow: var(--panel-shadow);
+}
+
+.ol-control:hover {
+    background: var(--panel);
+}
+
+.ol-control button {
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    border-radius: var(--radius-small);
+    background: transparent;
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.ol-control button:hover,
+.ol-control button:focus {
+    background: var(--accent-soft);
+    color: var(--accent);
+    outline: none;
+}
+
+.ol-zoom {
+    top: 88px;
+    left: var(--gap);
+}
+
+.ol-zoom .ol-zoom-in {
+    border-radius: var(--radius-small) var(--radius-small) 0 0;
+}
+
+.ol-zoom .ol-zoom-out {
+    border-top: 1px solid var(--panel-border);
+    border-radius: 0 0 var(--radius-small) var(--radius-small);
+}
+
+.ol-rotate {
+    top: 88px;
+    right: var(--gap);
+}
+
+/* The attribution sits above the timeline bar. */
+.ol-attribution {
+    right: var(--gap);
+    bottom: 112px;
+    max-width: calc(100% - 2 * var(--gap));
+    border-radius: var(--radius-small);
+    font-size: 11px;
+}
+
+.ol-attribution.ol-uncollapsible {
+    border-radius: var(--radius-small);
+}
+
+.ol-attribution ul {
+    padding: 4px 8px;
+    color: var(--text-muted);
+    text-shadow: none;
+}
+
+.ol-attribution:not(.ol-collapsed) {
+    background: var(--panel);
 }

@@ -1,5 +1,5 @@
 /**
- * Minimal types for the CoverageJSON responses returned by the EDR cube query.
+ * Minimal types for the CoverageJSON responses returned by the EDR cube and position queries.
  * Spec: https://docs.ogc.org/cs/21-069r2/21-069r2.html
  */
 
@@ -52,4 +52,34 @@ export interface Coverage {
     domain: GridDomain;
     parameters: Record<string, CoverageParameter>;
     ranges: Record<string, NdArray>;
+}
+
+/** Domain of a position query: a single point. */
+export interface PointDomain {
+    type: "Domain";
+    domainType: "Point";
+    axes: {
+        /** Longitude in degrees (CRS:84). */
+        x: ValuesAxis<number>;
+        /** Latitude in degrees (CRS:84). */
+        y: ValuesAxis<number>;
+        z?: ValuesAxis<number>;
+        t: ValuesAxis<string>;
+    };
+}
+
+/** Answer of the EDR position query: the values of the parameters at one point. */
+export interface PointCoverage {
+    type: "Coverage";
+    domain: PointDomain;
+    parameters: Record<string, CoverageParameter>;
+    ranges: Record<string, NdArray>;
+}
+
+/** Answer of the EDR position query for a time interval: one point coverage per time. */
+export interface PointCoverageCollection {
+    type: "CoverageCollection";
+    domainType: "Point";
+    parameters: Record<string, CoverageParameter>;
+    coverages: PointCoverage[];
 }
